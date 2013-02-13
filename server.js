@@ -25,17 +25,17 @@ function handler (req, res) {
 
 io.sockets.on('connection', function (socket) {
 
-  debugger;
   process.stdin.resume();
   process.stdin.setEncoding('utf8');
 
   process.on('SIGINT', function () {
     console.log('Got SIGINT.  Press Control-D to exit.');
+    process.stdin.pause();
   });
 
   process.stdin.on('data', function (chunk) {
     process.stdout.write('data: ' + chunk);
-    socket.emit('news', { data: chunk });
+    socket.emit('news', {"angle" : 0, "left" : 500, "top" : 500});
   });
 
   process.stdin.on('end', function () {

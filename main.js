@@ -1,8 +1,4 @@
 var socket = io.connect('http://localhost:8080');
-  socket.on('news', function (data) {
-    console.log(data);
-    socket.emit('my other event', { my: 'data' });
-  });
 
 var height = 1000;
 var width = 1000;
@@ -19,7 +15,7 @@ canvas.add(xAxis)
 canvas.add(yAxis)
 
 var triangle = new fabric.Triangle({
-  width: 20, height: 30, fill: 'blue', left: 500, top: 500
+	width: 20, height: 30, fill: 'blue', left: 500, top: 500
 });
 
 // "add" triangle onto canvas
@@ -28,6 +24,13 @@ canvas.add(triangle);
 var toRadians = function(degrees) {
 	return degrees * (Math.PI / 180);
 };
+
+socket.on('news', function (data) {
+	console.log(data);
+	triangle.setAngle(toRadians(data.angle));
+	triangle.setLeft(data.left);
+	triangle.setTop(data.top);
+});
 
 document.onkeydown = function(e) {
 	if (e.keyCode === 37) {
