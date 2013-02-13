@@ -1,9 +1,10 @@
 var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
-  , stdin = process.stdin
+  , redis = require("redis");
 
 app.listen(8080);
+client = redis.createClient()
 
 function handler (req, res) {
   var error = function (err, data) {
@@ -24,25 +25,14 @@ function handler (req, res) {
 }
 
 io.sockets.on('connection', function (socket) {
-
-  process.stdin.resume();
-  process.stdin.setEncoding('utf8');
-
-  process.on('SIGINT', function () {
-    console.log('Got SIGINT.  Press Control-D to exit.');
-    process.stdin.pause();
+  client.on("subscribe", function (channel, count) {
+    console.log("Subscribed to channel: " + channel);
   });
 
-  process.stdin.on('data', function (chunk) {
-    process.stdout.write('data: ' + chunk);
-    socket.emit('news', {"angle" : 0, "left" : 500, "top" : 500});
-  });
-
-  process.stdin.on('end', function () {
-    process.stdout.write('end');
-  });
-  
-  socket.on('my other event', function (data) {
-    console.log(data);
+  client.on("message", function (channel, message) {
+    console.log("client channel " + channel + ": " + message);
+    socket.emit('news', JSON.parse(message));
   });
 });
+
+client.subscribe("position updates");

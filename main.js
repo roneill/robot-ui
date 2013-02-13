@@ -27,9 +27,10 @@ var toRadians = function(degrees) {
 
 socket.on('news', function (data) {
 	console.log(data);
-	triangle.setAngle(toRadians(data.angle));
+	triangle.setAngle(data.angle);
 	triangle.setLeft(data.left);
 	triangle.setTop(data.top);
+	canvas.renderAll();
 });
 
 document.onkeydown = function(e) {
