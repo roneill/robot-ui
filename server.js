@@ -1,38 +1,43 @@
-var app = require('http').createServer(handler)
-  , io = require('socket.io').listen(app)
-  , fs = require('fs')
-  , redis = require("redis");
+var http = require("http");
+var net = require("net");
+var fs = require("fs");
 
-app.listen(8080);
-client = redis.createClient()
+var hr = false;
 
-function handler (req, res) {
-  var error = function (err, data) {
+var requestHandler = function(req, res) {
+  var responseHandler = function(err, data) {
     if (err) {
       res.writeHead(500);
-      return res.end('Error loading index.html');
+      return res.end("There was a problem on our end.");
     }
 
     res.writeHead(200);
     res.end(data);
-  };
-
-  if (req.url == "/") {
-    fs.readFile(__dirname + '/index.html', error);
-  } else {
-    fs.readFile(__dirname + req.url, error);
   }
+
+  var requestMapper = function(req, res, responseHandler) {
+    if (req.url == "/") {
+      fs.readFile(__dirname + '/index.html', responseHandler);
+    } else if (req.url == "/data") {
+      socketServer.once("connection", function(socket) {
+        socket.setEncoding();
+        socket.on("data", function(data) {
+          responseHandler(false, data);
+          socket.end();
+        });
+      });
+    }
+     else {
+      fs.readFile(__dirname + req.url, responseHandler);
+    }
+  }
+  requestMapper(req, res, responseHandler);
 }
 
-io.sockets.on('connection', function (socket) {
-  client.on("subscribe", function (channel, count) {
-    console.log("Subscribed to channel: " + channel);
-  });
-
-  client.on("message", function (channel, message) {
-    console.log("client channel " + channel + ": " + message);
-    socket.emit('news', JSON.parse(message));
-  });
-});
-
-client.subscribe("position updates");
+var server = http.createServer(requestHandler);
+var socketServer = net.createServer();
+socketServer.on("connection", function(socket) {
+  socket.end();
+})
+server.listen(8080);
+socketServer.listen(8083, "localhost");
