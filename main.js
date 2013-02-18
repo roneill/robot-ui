@@ -93,7 +93,7 @@ var toRadians = function(degrees) {
 
 (function poll(){
     $.ajax({ 
-      "url": "http://localhost:8080/data", 
+      "url": "/data",
       "success": function(data) {
         console.log(data);
         updateRobotPosition(data.angle, data.left, data.top);
