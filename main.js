@@ -23,8 +23,8 @@ var renderDashboard = function() {
       "error" : function(o, b, j) {
       }, 
       "dataType": "json", 
-      "complete": poll});
-  })
+      "complete": poll
+    });
   }
 }
 
@@ -95,10 +95,11 @@ var toRadians = function(degrees) {
     $.ajax({ 
       "url": "http://localhost:8080/data", 
       "success": function(data) {
+        console.log(data);
         updateRobotPosition(data.angle, data.left, data.top);
-        updateGoalPosition(data.goal);
-        updateDataPoints(data.points);
-        updateEventLog(data.events);
+        //updateGoalPosition(data.goal);
+        //updateDataPoints(data.points);
+        //updateEventLog(data.events);
         world.canvas.renderAll();
       },
       "error" : function(o, b, j) {
@@ -108,7 +109,6 @@ var toRadians = function(degrees) {
 })();
 
 var updateRobotPosition = function(angle, left, top) {
-  console.log(data);
   world.robot.setAngle(angle);
   world.robot.setLeft(left);
   world.robot.setTop(top);
