@@ -8,24 +8,29 @@ var requestHandler = function(req, res) {
       res.writeHead(500);
       return res.end("There was a problem on our end.");
     }
+    
+      try {
+	  res.writeHead(200);
+	  res.end(data);
+      } catch(e) {
+	  console.log("Response hangup");
+      }
 
-    res.writeHead(200);
-    res.end(data);
   }
 
   var requestMapper = function(req, res, responseHandler) {
     if (req.url == "/") {
       fs.readFile(__dirname + '/index.html', responseHandler);
     } else if (req.url == "/data") {
-      console.log("Received request for data");
-      socketServer.once("connection", function(socket) {
-        socket.setEncoding();
-        socket.on("data", function(data) {
-          console.log("Servicing request for data");
-          responseHandler(false, data);
-          socket.end();
-        });
-      });
+          console.log("Received request for data");
+          socketServer.once("connection", function(socket) {
+            socket.setEncoding();
+            socket.on("data", function(data) {
+              console.log("Servicing request for data");
+              responseHandler(false, data);
+              socket.end();
+            });
+          });
     } else if (req.url == "/map") {
       readMap(responseHandler);
     }
