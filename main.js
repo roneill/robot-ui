@@ -48,9 +48,13 @@ var renderLocalNavigation = function() {
   world.canvas.add(xAxis)
   world.canvas.add(yAxis)
 
-  world.robot = new fabric.Triangle({
-    width: 20, height: 30, fill: 'blue', left: width / 2, top: height / 2
-  });
+    world.robot = new fabric.Rect({
+	left: width / 2,
+	top: height / 2,
+	fill: "blue",
+	width: 20,
+	height:20
+    });
 
   world.canvas.add(world.robot);
 }
@@ -92,7 +96,7 @@ var toRadians = function(degrees) {
 };
 
 (function poll(){
-    $.ajax({ 
+    $.ajax({
       "url": "/data",
       "success": function(data) {
         console.log(data);
@@ -105,13 +109,19 @@ var toRadians = function(degrees) {
       "error" : function(o, b, j) {
       }, 
       "dataType": "json", 
-      "complete": poll});
+	"complete": function(jqxhr, status) {
+	    if (status == "error") {
+		setTimeout(poll, 1000);
+	    } else {
+		poll();
+	    }
+	}});
 })();
 
 var updateRobotPosition = function(angle, left, top) {
   world.robot.setAngle(angle);
-  world.robot.setLeft(left);
-  world.robot.setTop(top);
+  world.robot.setLeft(left + 250);
+  world.robot.setTop(top + 250);
 };
 
 var updateGoalPosition = function(goal) {
@@ -131,6 +141,8 @@ var updateDataPoints = function() {
 var updateEventLog = function() {
   
 }
+
+renderLocalNavigation();
 
 document.onkeydown = function(e) {
   if (e.keyCode === 37) {
