@@ -15,13 +15,16 @@ var renderLocalNavigation = function() {
 
 var renderGlobalNavigation = function(map) {
   var renderObstacle = function(obstacle) {
+      var rectWidth = obstacle.x1;
+      var rectHeight = obstacle.y1 - obstacle.y0;
     var rect = new fabric.Rect({
-      left: (width / 2) + obstacle.x0,
-      top: (height / 2) - obstacle.y0,
+	left: (width / 2) + obstacle.x0 + (rectWidth / 2),
+	top: ((height / 2) + (rectHeight / 2)) - obstacle.y0,
       strokeWidth: 1,
       stroke: 'black',
-      width: obstacle.x1 - obstacle.x0,
-      height: obstacle.y1 - obstacle.y0,
+	fill: "#fff",
+	width: rectWidth,
+	height: rectHeight,
     });
 
     world.canvas.add(rect);
@@ -94,7 +97,9 @@ var toRadians = function(degrees) {
         console.log(data);
         updateRobotPosition(data.angle, data.left, data.top);
         //updateGoalPosition(data.goal);
-        //updateDataPoints(data.points);
+          if (data.points) {
+	      updateDataPoints(data.left, data.top, data.points);
+	  }
         //updateEventLog(data.events);
         world.canvas.renderAll();
       },
@@ -126,8 +131,19 @@ var updateGoalPosition = function(goal) {
   }
 }
 
-var updateDataPoints = function() {
+var receivedPointsIdx = 0;
 
+var updateDataPoints = function(left, top, points) {
+    for (receivedPointsIdx; receivedPointsIdx < points.length; receivedPointsIdx++) {
+	var point = points[receivedPointsIdx];
+	var circle = new fabric.Circle({
+	    "radius": 1, 
+	    "fill": 'black', 
+	    "left": left + point, 
+	    "top": top - top
+	});
+	world.canvas.add(circle);
+    }
 }
 
 var updateEventLog = function() {

@@ -1,6 +1,6 @@
 var net = require('net');
 
-var data = {"angle" : 0, "left" : 500, "top" : 250};
+var data = {"angle" : 0, "left" : 250, "top" : 250};
 
 var handler = function() {
   var client = net.connect({port: 8083}, function() {
@@ -15,4 +15,4 @@ var handler = function() {
   });
 }
 
-setInterval(handler, 50);
+setInterval(handler, 100);
