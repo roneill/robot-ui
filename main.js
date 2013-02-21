@@ -53,8 +53,8 @@ var renderGlobalNavigation = function(map) {
 
 var renderGoal = function(goal) {
   var circle = new fabric.Circle({
-    radius: 10, 
-    fill: 'black', 
+    radius: 5,
+    fill: 'black',
     left: goal.x + width / 2,
     top: height / 2 - goal.y
   });
