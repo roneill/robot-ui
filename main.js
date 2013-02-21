@@ -8,24 +8,27 @@ var world = {
   "goal" : null
 }
 
+// Render the local navigation arena
 var renderLocalNavigation = function() {
   renderCanvas(height, width);
   renderRobot();
 }
 
+// Renders the global navigation arena.
+// Renders the goal location as well as all obstacles from the map file.
 var renderGlobalNavigation = function(map) {
   var renderObstacle = function(obstacle) {
-      var rectWidth = obstacle.x1;
-      var rectHeight = obstacle.y1 - obstacle.y0;
+    var rectWidth = obstacle.x1 - obstacle.x0;
+    var rectHeight = obstacle.y1 - obstacle.y0;
     var rect = new fabric.Rect({
-	left: (width / 2) + obstacle.x0 + (rectWidth / 2),
-	top: ((height / 2) + (rectHeight / 2)) - obstacle.y0,
-      strokeWidth: 1,
-      stroke: 'black',
-	fill: "#fff",
-	width: rectWidth,
-	height: rectHeight,
-    });
+     left: (width / 2) + (rectWidth + obstacle.x0),
+     top: (height / 2) + ((rectHeight / 2) - obstacle.y1) ,
+     strokeWidth: 1,
+     stroke: 'black',
+     fill: "#fff",
+     width: rectWidth,
+     height: rectHeight,
+   });
 
     world.canvas.add(rect);
   }
@@ -90,34 +93,38 @@ var toRadians = function(degrees) {
   return degrees * (Math.PI / 180);
 };
 
+// Continuously poll the server the new data.
+// Requests will not be fulfilled until the server has received data
+// from the robot.
 (function poll(){
-    $.ajax({
-      "url": "/data",
-      "success": function(data) {
-        console.log(data);
-        updateRobotPosition(data.angle, data.left, data.top);
-        //updateGoalPosition(data.goal);
-          if (data.points) {
-	      updateDataPoints(data.left, data.top, data.points);
-	  }
-        //updateEventLog(data.events);
+  $.ajax({
+    "url": "/data",
+    "success": function(data) {
+      console.log(data);
+      updateRobotPosition(data.angle, data.left, data.top);
+        if (data.points) {
+         updateDataPoints(data.left, data.top, data.points);
+       }
         world.canvas.renderAll();
       },
       "error" : function(o, b, j) {
       }, 
       "dataType": "json", 
-	"complete": function(jqxhr, status) {
-	    if (status == "error") {
-		setTimeout(poll, 1000);
-	    } else {
-		poll();
-	    }
-	}});
+      "complete": function(jqxhr, status) {
+       if (status == "error") {
+        setTimeout(poll, 1000);
+      } else {
+        poll();
+      }
+    }});
 })();
 
 var updateRobotPosition = function(angle, left, top) {
   world.robot.setAngle(angle);
+  // offset the current position by half the length and width of the canvas
+  // to center the coordinate plane.
   world.robot.setLeft(left + width / 2);
+  // this should be top - height / 2, but the robot code already accounts for the bug.
   world.robot.setTop(top + height / 2);
 };
 
@@ -132,22 +139,20 @@ var updateGoalPosition = function(goal) {
 }
 
 var receivedPointsIdx = 0;
-
 var updateDataPoints = function(left, top, points) {
-    for (receivedPointsIdx; receivedPointsIdx < points.length; receivedPointsIdx++) {
-	var point = points[receivedPointsIdx];
-	var circle = new fabric.Circle({
-	    "radius": 1, 
-	    "fill": 'black', 
-	    "left": left + point, 
-	    "top": top - top
-	});
-	world.canvas.add(circle);
-    }
-}
-
-var updateEventLog = function() {
-  
+  // To ensure that we don't lose data points, we send all the collected data
+  // points on each request. We only render, however, the data points that 
+  // have not been rendered previously.
+  for (receivedPointsIdx; receivedPointsIdx < points.length; receivedPointsIdx++) {
+   var point = points[receivedPointsIdx];
+   var circle = new fabric.Circle({
+     "radius": 1, 
+     "fill": 'black', 
+     "left": (width / 2) + left + point, 
+     "top": (height / 2) - top
+   });
+   world.canvas.add(circle);
+ }
 }
 
 $("#localnav").click(function() {
